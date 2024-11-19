@@ -1,13 +1,13 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ProductService } from '../services/product.service';
 import { Catalog } from './catalog';
 import { FormsModule } from '@angular/forms';
 import { ProductResponse } from '../contracts/responses/product.response';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../cart/services/cart.service';
-import { Observable, Subscription } from 'rxjs';
-import { CartItemModel } from '../../cart/models/cart.item.model';
-import { takeUntil } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { count, map } from 'rxjs/operators';
+import { NgIf, AsyncPipe } from '@angular/common';
 @Component({
   standalone: true,
   selector: 'catalog-listing',
@@ -16,9 +16,10 @@ import { takeUntil } from 'rxjs/operators';
     <div class="catalog-listing">
       @if(keyword.length){
       <h2>Results for '{{ keyword }}'</h2>
-      } @if(cartItemsCount > 0){
-      <h2>Cart Items: {{ cartItemsCount }}</h2>
       }
+      <h2 *ngIf="cartItemsCount$ | async as cartItemsCount">
+        Cart Items: {{ cartItemsCount }}
+      </h2>
       <input
         type="search"
         class="search"
@@ -41,27 +42,26 @@ import { takeUntil } from 'rxjs/operators';
       </div>
     </div>
   `,
-  imports: [Catalog, FormsModule, RouterLink],
+  imports: [Catalog, FormsModule, RouterLink, AsyncPipe, NgIf],
 })
-export class CatalogListing implements OnInit, OnDestroy {
+export class CatalogListing implements OnInit {
   products: ProductResponse[] = [];
   productSource: ProductResponse[] = [];
   keyword: string = '';
-  cartItemsCount: number = 0;
-  subscription: Subscription | undefined;
+  public cartItemsCount$: Observable<number>;
   constructor(
     private productService: ProductService,
     private cartService: CartService
-  ) {}
+  ) {
+    this.cartItemsCount$ = this.cartService
+      .getItems$()
+      .pipe(map((items) => items.length));
+  }
 
   ngOnInit(): void {
     this.productService
       .getAll()
       .subscribe((products) => (this.products = this.productSource = products));
-
-    this.subscription = this.cartService
-      .getItems$()
-      .subscribe((items) => (this.cartItemsCount = items.length));
   }
 
   onSearch(): void {
@@ -73,9 +73,5 @@ export class CatalogListing implements OnInit, OnDestroy {
   resetSearch(): void {
     this.keyword = '';
     this.products = this.productSource;
-  }
-
-  ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
   }
 }
