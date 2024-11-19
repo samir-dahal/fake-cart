@@ -1,9 +1,9 @@
-import {Routes} from '@angular/router';
-import { CatalogListing } from '../components/catalog.listing';
+import { Routes } from '@angular/router';
+import { CatalogPage } from '../pages';
 export const catalogRoutes: Routes = [
-    {
-      path: 'products',
-      title: "Products",
-      component: CatalogListing,
-    },
-  ];
+  {
+    path: 'products',
+    title: 'Products',
+    component: CatalogPage,
+  },
+];
