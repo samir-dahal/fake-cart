@@ -1,15 +1,11 @@
 import { Component } from '@angular/core';
 import { CatalogListing } from '../components/catalog.listing';
-import { Loader } from '../../../shared/components/loader';
 @Component({
   standalone: true,
   template: `
-    @defer{
+    <h2>Fake Cart</h2>
     <catalog-listing />
-    } @placeholder (minimum 500ms) {
-    <loader />
-    }
   `,
-  imports: [CatalogListing, Loader],
+  imports: [CatalogListing],
 })
 export class CatalogPage {}

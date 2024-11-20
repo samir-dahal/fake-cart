@@ -32,4 +32,8 @@ export class CartService {
       this.cartItems$.next(this.items);
     }
   }
+  public clearCart(): void {
+    this.items = [];
+    this.cartItems$.next(this.items);
+  }
 }

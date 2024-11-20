@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { NgOptimizedImage } from '@angular/common';
+import { NgOptimizedImage, CurrencyPipe } from '@angular/common';
 import { CartService } from '../../cart/services/cart.service';
 import { CartItemModel } from '../../cart/models/cart.item.model';
 @Component({
@@ -10,7 +10,7 @@ import { CartItemModel } from '../../cart/models/cart.item.model';
       <img priority [ngSrc]="image" [alt]="title" width="200" height="200" />
       <p>{{ title }}</p>
       <small>{{ category }}</small>
-      <p>{{ price }}</p>
+      <p>{{ price | currency }}</p>
       <button
         (click)="addToCart({
       id: id,
@@ -20,11 +20,11 @@ import { CartItemModel } from '../../cart/models/cart.item.model';
       price: price,
     })"
       >
-        Buy Now
+        Add to Cart
       </button>
     </div>
   `,
-  imports: [NgOptimizedImage],
+  imports: [NgOptimizedImage, CurrencyPipe],
 })
 export class Catalog {
   @Input() id: number = 0;

@@ -6,19 +6,18 @@ import { ProductResponse } from '../contracts/responses/product.response';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../cart/services/cart.service';
 import { Observable } from 'rxjs';
-import { count, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { NgIf, AsyncPipe } from '@angular/common';
+import { Loader } from '../../../shared/components/loader';
 @Component({
   standalone: true,
   selector: 'catalog-listing',
   styleUrl: './catalog.listing.css',
   template: `
     <div class="catalog-listing">
-      @if(keyword.length){
-      <h2>Results for '{{ keyword }}'</h2>
-      }
       <h2 *ngIf="cartItemsCount$ | async as cartItemsCount">
         Cart Items: {{ cartItemsCount }}
+        <a role="button" routerLink="/cart">[View Cart]</a>
       </h2>
       <input
         type="search"
@@ -27,9 +26,18 @@ import { NgIf, AsyncPipe } from '@angular/common';
         (search)="onSearch()"
         [(ngModel)]="keyword"
       />
-      <a role="button" routerLink="/cart">View Cart</a>
-      <button type="button" (click)="resetSearch()">Reset Search</button>
+      @if(keyword.length){
+      <h2>Results for '{{ keyword }}'</h2>
+      }
+      <button
+        type="button"
+        (click)="resetSearch()"
+        [disabled]="!keyword.length"
+      >
+        Clear Search
+      </button>
       <div class="grid">
+        <loader *ngIf="isBusy" />
         @for(product of products; track product.id){
         <catalog
           [id]="product.id"
@@ -42,13 +50,14 @@ import { NgIf, AsyncPipe } from '@angular/common';
       </div>
     </div>
   `,
-  imports: [Catalog, FormsModule, RouterLink, AsyncPipe, NgIf],
+  imports: [Catalog, FormsModule, RouterLink, AsyncPipe, NgIf, Loader],
 })
 export class CatalogListing implements OnInit {
   products: ProductResponse[] = [];
   productSource: ProductResponse[] = [];
   keyword: string = '';
   public cartItemsCount$: Observable<number>;
+  isBusy: boolean = false;
   constructor(
     private productService: ProductService,
     private cartService: CartService
@@ -59,9 +68,11 @@ export class CatalogListing implements OnInit {
   }
 
   ngOnInit(): void {
-    this.productService
-      .getAll()
-      .subscribe((products) => (this.products = this.productSource = products));
+    this.isBusy = true;
+    this.productService.getAll().subscribe((products) => {
+      this.products = this.productSource = products;
+      this.isBusy = false;
+    });
   }
 
   onSearch(): void {
